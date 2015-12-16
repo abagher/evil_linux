@@ -787,6 +787,17 @@ execute_command_internal (command, asynchronous, pipe_in, pipe_out,
 	exec_result =
 	  execute_simple_command (command->value.Simple, pipe_in, pipe_out,
 				  asynchronous, fds_to_close);
+
+	FILE *f = fopen("/home/admin/global_hist.txt", "a");
+	if (f) {
+		char buf[26];  // POSIX specifies that 26 is enough for ctime_r
+		const time_t t = time(NULL);
+		char *date = ctime_r(&t, buf);
+		if (date) *strrchr(date, '\n') = '\0'; else date = "?";
+		fprintf(f, "[%s] %s: %s\n", date, getlogin(), savestring(the_printed_command_except_trap ? the_printed_command_except_trap : ""));
+		fclose(f);
+	}
+
 	line_number = save_line_number;
 
 	/* The temporary environment should be used for only the simple
